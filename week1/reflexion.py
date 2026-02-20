@@ -15,7 +15,24 @@ Keep the implementation minimal.
 """
 
 # TODO: Fill this in!
-YOUR_REFLEXION_PROMPT = ""
+YOUR_REFLEXION_PROMPT = """
+You are an expert coding assistant.
+
+You will be given 
+1. the current function implementation
+2. the test result diagnostics
+
+You must
+- Fix the function implementation
+- Fix ONLY the body function, the name, parameters/arguments, and return type remain same: is_valid_password(password: str) -> bool
+- Implement the correct validation rules inferred from failures (length, digit, lowcase, uppercase, special, whitespace)
+- Return a complete fixed implementation
+
+Output ONLY a single fenced Python code block
+No prose
+No comments
+Keep it minimal
+"""
 
 
 # Ground-truth test suite used to evaluate generated code

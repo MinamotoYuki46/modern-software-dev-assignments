@@ -7,7 +7,20 @@ load_dotenv()
 NUM_RUNS_TIMES = 5
 
 # TODO: Fill this in!
-YOUR_SYSTEM_PROMPT = ""
+YOUR_SYSTEM_PROMPT = """
+Reverse the characters of the input string. Output only the reversed result.
+
+Examples:
+http -> ptth
+status -> sutats
+banana -> ananab
+pineapple -> elppaenip
+stardenburdenhardenbach -> hcabnedrahnedrubnedrats
+httppower -> rewopptth
+statushttp -> ptthsutats
+"""
+
+
 
 USER_PROMPT = """
 Reverse the order of letters in the following word. Only output the reversed word, no other text:

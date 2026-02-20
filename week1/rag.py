@@ -37,7 +37,21 @@ QUESTION = (
 
 
 # TODO: Fill this in!
-YOUR_SYSTEM_PROMPT = ""
+YOUR_SYSTEM_PROMPT = """
+You are a very high detailed asssistant.
+
+Rules:
+- Use ONLY the provided context block to determine API details.
+- Do NOT invent URLs, headers, or parameters.
+- Output ONLY a single fenced Python code block.
+- Include required imports.
+- Implement exactly the requested function signature.
+- Use requests.get to call the API.
+- Use the documented Base URL and /users/{id} endpoint.
+- Send header: X-API-Key.
+- Raise for non-200 responses using response.raise_for_status().
+- Return only the user's name as a string.
+"""
 
 
 # For this simple example
