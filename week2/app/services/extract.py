@@ -32,6 +32,13 @@ def _is_action_line(line: str) -> bool:
 
 
 def extract_action_items(text: str) -> List[str]:
+    """Heuristic extraction from plain text.
+
+    This original implementation does not use any external AI models and is
+    retained for compatibility and as a fallback.  It remains unchanged so that
+    the behaviour of existing callers is predictable.
+    """
+
     lines = text.splitlines()
     extracted: List[str] = []
     for raw_line in lines:
@@ -44,6 +51,11 @@ def extract_action_items(text: str) -> List[str]:
             # Trim common checkbox markers
             cleaned = cleaned.removeprefix("[ ]").strip()
             cleaned = cleaned.removeprefix("[todo]").strip()
+            # Remove any keyword prefixes ("todo:", "action:", etc.)
+            for prefix in KEYWORD_PREFIXES:
+                if cleaned.lower().startswith(prefix):
+                    cleaned = cleaned[len(prefix) :].strip()
+                    break
             extracted.append(cleaned)
     # Fallback: if nothing matched, heuristically split into sentences and pick imperative-like ones
     if not extracted:
@@ -64,6 +76,44 @@ def extract_action_items(text: str) -> List[str]:
         seen.add(lowered)
         unique.append(item)
     return unique
+
+
+def extract_action_items_llm(text: str) -> List[str]:
+    """Use an LLM to pull out action items from *text*.
+
+    The function attempts to invoke an Ollama model (``lama3.1``) to perform
+    the extraction.  The prompt instructs the model to respond with a plain
+    JSON array of strings.  If the call fails or the result cannot be
+    interpreted, we simply delegate back to :func:`extract_action_items` to
+    preserve sensible behaviour.
+    """
+
+    try:
+        prompt = (
+            "Extract the action items from the following text. "
+            "Return only a JSON array of strings.\n\n" + text.strip()
+        )
+        response = chat(
+            model="lama3.1",
+            messages=[{"role": "user", "content": prompt}],
+        )
+        items = json.loads(response)
+        if isinstance(items, list) and all(isinstance(i, str) for i in items):
+            # dedupe while preserving order
+            seen: set[str] = set()
+            unique: List[str] = []
+            for itm in items:
+                lowered = itm.lower()
+                if lowered in seen:
+                    continue
+                seen.add(lowered)
+                unique.append(itm)
+            return unique
+    except Exception:  # pylint: disable=broad-except
+        pass
+
+    # fallback to old behaviour
+    return extract_action_items(text)
 
 
 def _looks_imperative(sentence: str) -> bool:

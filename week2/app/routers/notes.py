@@ -32,3 +32,13 @@ def get_single_note(note_id: int) -> Dict[str, Any]:
     return {"id": row["id"], "content": row["content"], "created_at": row["created_at"]}
 
 
+@router.get("")
+def list_notes() -> List[Dict[str, Any]]:
+    """Return all notes in descending insertion order."""
+    rows = db.list_notes()
+    return [
+        {"id": r["id"], "content": r["content"], "created_at": r["created_at"]}
+        for r in rows
+    ]
+
+
