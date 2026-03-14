@@ -9,7 +9,9 @@ class NoteCreate(BaseModel):
 
     @field_validator("title", "content", mode="before")
     def strip_whitespace(cls, v: str) -> str:
-        return v.strip()
+        if isinstance(v, str):
+            return v.strip()
+        return v
 
     @field_validator("title", "content")
     def not_empty(cls, v: str) -> str:
@@ -39,7 +41,9 @@ class ActionItemCreate(BaseModel):
 
     @field_validator("description", mode="before")
     def strip_whitespace(cls, v: str) -> str:
-        return v.strip()
+        if isinstance(v, str):
+            return v.strip()
+        return v
 
     @field_validator("description")
     def not_empty(cls, v: str) -> str:

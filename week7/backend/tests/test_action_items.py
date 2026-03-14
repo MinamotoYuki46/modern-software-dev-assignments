@@ -48,3 +48,29 @@ def test_action_item_get_delete_and_validation(client):
     assert r.status_code == 422
 
 
+def test_action_item_get_delete_and_validation(client):
+    payload = {"description": "Test item"}
+    r = client.post("/action-items/", json=payload)
+    assert r.status_code == 201
+    item_id = r.json()["id"]
+
+    r = client.get(f"/action-items/{item_id}")
+    assert r.status_code == 200
+    assert r.json()["description"] == "Test item"
+
+    r = client.delete(f"/action-items/{item_id}")
+    assert r.status_code == 204
+
+    r = client.get(f"/action-items/{item_id}")
+    assert r.status_code == 404
+
+    r = client.delete(f"/action-items/{item_id}")
+    assert r.status_code == 404
+
+    r = client.post("/action-items/", json={"description": ""})
+    assert r.status_code == 422
+
+    r = client.post("/action-items/", json={"description": "   "})
+    assert r.status_code == 422
+
+
