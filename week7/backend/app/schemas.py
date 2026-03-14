@@ -1,11 +1,21 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 
 class NoteCreate(BaseModel):
-    title: str
-    content: str
+    title: str = Field(...)
+    content: str = Field(...)
+
+    @field_validator("title", "content", mode="before")
+    def strip_whitespace(cls, v: str) -> str:
+        return v.strip()
+
+    @field_validator("title", "content")
+    def not_empty(cls, v: str) -> str:
+        if not v:
+            raise ValueError("must not be empty or whitespace")
+        return v
 
 
 class NoteRead(BaseModel):
@@ -25,7 +35,17 @@ class NotePatch(BaseModel):
 
 
 class ActionItemCreate(BaseModel):
-    description: str
+    description: str = Field(...)
+
+    @field_validator("description", mode="before")
+    def strip_whitespace(cls, v: str) -> str:
+        return v.strip()
+
+    @field_validator("description")
+    def not_empty(cls, v: str) -> str:
+        if not v:
+            raise ValueError("must not be empty or whitespace")
+        return v
 
 
 class ActionItemRead(BaseModel):
