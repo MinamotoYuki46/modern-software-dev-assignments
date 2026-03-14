@@ -1,20 +1,26 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..db import get_db
 from ..models import Note
-from ..schemas import NoteCreate, NoteRead
+from ..schemas import NoteCreate, NoteListResponse, NoteRead
 
 router = APIRouter(prefix="/notes", tags=["notes"])
 
 
-@router.get("/", response_model=list[NoteRead])
-def list_notes(db: Session = Depends(get_db)) -> list[NoteRead]:
-    rows = db.execute(select(Note)).scalars().all()
-    return [NoteRead.model_validate(row) for row in rows]
+@router.get("/", response_model=NoteListResponse)
+def list_notes(
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1),
+    db: Session = Depends(get_db),
+) -> NoteListResponse:
+    total = db.execute(select(func.count()).select_from(Note)).scalar_one()
+    offset = (page - 1) * page_size
+    rows = db.execute(select(Note).offset(offset).limit(page_size)).scalars().all()
+    return NoteListResponse(items=[NoteRead.model_validate(r) for r in rows], total=total)
 
 
 @router.post("/", response_model=NoteRead, status_code=201)
