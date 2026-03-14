@@ -45,3 +45,22 @@ def test_note_delete_and_validation(client):
     assert r.status_code == 422
 
 
+def test_note_extract_endpoint(client):
+    payload = {"title": "Extract test", "content": "TODO: add docs\nPlease deploy by Monday\nThis is fine"}
+    r = client.post("/notes/", json=payload)
+    assert r.status_code == 201
+    note_id = r.json()["id"]
+
+    r = client.post(f"/notes/{note_id}/extract")
+    assert r.status_code == 200
+    extracted = r.json()
+    texts = [item["text"] for item in extracted]
+    kinds = [item["kind"] for item in extracted]
+    assert "TODO: add docs" in texts
+    assert "Please deploy by Monday" in texts
+    assert "TODO" in kinds or "TRIGGER_PHRASE" in kinds
+
+    r = client.post("/notes/999999/extract")
+    assert r.status_code == 404
+
+
