@@ -45,3 +45,21 @@ def test_note_delete_and_validation(client):
     assert r.status_code == 422
 
 
+def test_note_extract_endpoint_structured(client):
+    payload = {"title": "Extract test", "content": "TODO: add docs\nPlease deploy by Monday\nThis is fine"}
+    r = client.post("/notes/", json=payload)
+    assert r.status_code == 201
+    note_id = r.json()["id"]
+
+    r = client.post(f"/notes/{note_id}/extract")
+    assert r.status_code == 200
+    extracted = r.json()
+    assert isinstance(extracted, list)
+    assert any(item["kind"] == "TODO" for item in extracted)
+    assert any(item["text"] == "Please deploy by Monday" for item in extracted)
+    assert any(item["deadline"] == "Monday" for item in extracted if item.get("deadline"))
+
+    r = client.post("/notes/999999/extract")
+    assert r.status_code == 404
+
+
