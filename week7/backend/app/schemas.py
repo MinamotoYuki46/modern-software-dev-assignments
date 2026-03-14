@@ -20,12 +20,23 @@ class NoteCreate(BaseModel):
         return v
 
 
+class TagRead(BaseModel):
+    id: int
+    name: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class NoteRead(BaseModel):
     id: int
     title: str
     content: str
     created_at: datetime
     updated_at: datetime
+    tags: list[TagRead] = Field(default_factory=list)
 
     class Config:
         from_attributes = True
@@ -61,6 +72,22 @@ class ActionItemRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class TagCreate(BaseModel):
+    name: str = Field(...)
+
+    @field_validator("name", mode="before")
+    def strip_lower(cls, v: str) -> str:
+        if isinstance(v, str):
+            return v.strip().lower()
+        return v
+
+    @field_validator("name")
+    def not_empty(cls, v: str) -> str:
+        if not v:
+            raise ValueError("must not be empty or whitespace")
+        return v
 
 
 class ActionItemPatch(BaseModel):
